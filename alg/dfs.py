@@ -1,6 +1,5 @@
-from queue import Queue
 
-def bfs(src_x, src_y, des_x, des_y, invalid):
+def dfs(src_x, src_y, des_x, des_y, invalid):
     if(src_x == -1 or src_y == -1 or des_x == -1 or des_y == -1):
         return
     
@@ -22,26 +21,25 @@ def bfs(src_x, src_y, des_x, des_y, invalid):
 
     for x, y in invalid:
         grid[x][y] = 0
-    
-    used[src_x][src_y] = 1
-    q = Queue()
-    q.put((src_x, src_y))
-    
-    while not q.empty():
-        row, col = q.get()
-        if row == des_x and col == des_y:
-            break
 
-        searchspace.append([row, col])
+    
+    stack = []
+    stack.append((src_x, src_y))
+    used[src_x][src_y] = 1
+    while len(stack) > 0:
+        x, y = stack.pop()
+        used[x][y] = 1
+        if x == des_x and y == des_y:
+            break
+        searchspace.append([x, y])
         for i in range(4):
-            tx = row + dx[i]
-            ty = col + dy[i]
+            tx = x + dx[i]
+            ty = y + dy[i]
 
             if valid(tx, ty) and used[tx][ty] == 0:
-                used[tx][ty] = 1
-                q.put((tx, ty))
-                par[tx][ty] = [row , col]
-    
+                stack.append((tx, ty))
+                par[tx][ty] = [x, y]
+
     path = []
     x, y = des_x, des_y
     while par[x][y] != [-1, -1]:

@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from alg import bfs
+from alg import bfs, dfs
 
 class root:
     def __init__(self):
@@ -12,8 +12,7 @@ class root:
         self.des_x, self.des_y = -1, -1
         self.invalid = []
         self.color = 'green'
-        self.delay = 0
-
+        
         self.window = tk.Tk()
         self.init()
         self.window.mainloop()
@@ -99,25 +98,33 @@ class root:
         else:
             self.invalid.append([col, row])
     
-    def draw(self, items, fill):
+    
+    def drawSS(self, items, fill):
         col, row = items.pop()
-        self.delay += 5
         self.canvas.create_rectangle(row * 22, col * 22, (row + 1) * 22, (col + 1) * 22, fill = fill)
         if len(items) > 0:
-            self.canvas.after(5, self.draw, items, fill)
+            self.canvas.after(5, self.drawSS, items, fill)
             
+    def drawP(self, items, fill):
+        col, row = items.pop()
+        self.canvas.create_rectangle(row * 22, col * 22, (row + 1) * 22, (col + 1) * 22, fill = fill)
+        if len(items) > 0:
+            self.canvas.after(5, self.drawP, items, fill)
 
     def runBfs(self):
         if(self.src_x == -1 or self.src_y == -1 or self.des_x == -1 or self.des_y == -1):
             return
 
-        found, searchspace, path = bfs.bfs(self.src_x, self.src_y, self.des_x, self.des_y, self.invalid, self.canvas)
+        found, searchspace, path = bfs.bfs(self.src_x, self.src_y, self.des_x, self.des_y, self.invalid)
         if found:
+            self.prev_y = self.des_y
+            self.prev_x = self.des_x
             searchspace.remove([self.src_x, self.src_y])
             path.remove([self.des_x, self.des_y])
             searchspace.reverse()
-            self.draw(searchspace, 'blue')
-            self.canvas.after((len(searchspace) + len(path)) * 5 + 500, self.draw, path, 'pink')
+            print(path)
+            self.drawSS(searchspace, 'blue')
+            self.canvas.after((len(searchspace) + len(path)) * 5 + 500, self.drawP, path, 'pink')
 
         else:
             msg = messagebox.showerror(title = "Invalid", message = "Path Not Found") 
