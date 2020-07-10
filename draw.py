@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 from alg import bfs
 
 class root:
@@ -14,23 +15,22 @@ class root:
         self.delay = 0
 
         self.window = tk.Tk()
-        self.initCanvas()
+        self.init()
         self.window.mainloop()
     
-    def initCanvas(self):
+    def init(self):
         self.canvas = tk.Canvas(self.window, width = 1300, height = 700 , bg = 'white')
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind('<Configure>', self.draw_grid) 
         self.windowState = True
+        self.window.resizable(False, False)
         self.window.attributes('-zoomed', self.windowState)
         self.window.title('Path-Find Visualizer')
-        self.window.bind('<F11>', self.toggleFullScreen)
-        self.window.bind('<Escape>', self.quitFullScreen)
         self.window.bind('<Button-1>', self.fill_square)
         self.window.bind('<B1-Motion>', self.fill_square)
-        self.clear = tk.Button(self.window, width = 5, height = 2, text = 'Clear!!', command = self.clearAll)
+        self.clear = tk.Button(self.window, width = 5, height = 1, text = 'Clear!!', command = self.clearAll)
         self.clear.place(x = 0, y = 0)
-        self.run = tk.Button(self.window,  width = 5, height = 2, text = 'Run!!', command = self.runBfs)
+        self.run = tk.Button(self.window,  width = 5, height = 1, text = 'Run!!', command = self.runBfs)
         self.run.place(x = 0, y = 30)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind('<Configure>', self.draw_grid) 
@@ -108,6 +108,9 @@ class root:
             
 
     def runBfs(self):
+        if(self.src_x == -1 or self.src_y == -1 or self.des_x == -1 or self.des_y == -1):
+            return
+
         found, searchspace, path = bfs.bfs(self.src_x, self.src_y, self.des_x, self.des_y, self.invalid, self.canvas)
         if found:
             searchspace.remove([self.src_x, self.src_y])
@@ -115,7 +118,10 @@ class root:
             searchspace.reverse()
             self.draw(searchspace, 'blue')
             self.canvas.after((len(searchspace) + len(path)) * 5 + 500, self.draw, path, 'pink')
-            
+
+        else:
+            msg = messagebox.showerror(title = "Invalid", message = "Path Not Found") 
+            self.clearAll()  
 
     def clearAll(self):
         self.window.destroy()
