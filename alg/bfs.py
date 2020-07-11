@@ -1,6 +1,6 @@
 from queue import Queue
 
-def bfs(src_x, src_y, des_x, des_y, invalid):
+def main(src_x, src_y, des_x, des_y, invalid):
     if(src_x == -1 or src_y == -1 or des_x == -1 or des_y == -1):
         return
     
@@ -50,13 +50,3 @@ def bfs(src_x, src_y, des_x, des_y, invalid):
     
     path.reverse()
     return used[des_x][des_y], searchspace, path
-    
-    
-    
-    
-
-
-    
-
-
-

@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, OptionMenu, StringVar
 from alg import bfs
 
 class root:
@@ -12,7 +12,8 @@ class root:
         self.des_x, self.des_y = -1, -1
         self.invalid = []
         self.color = 'green'
-        
+        self.drawn = False
+
         self.window = tk.Tk()
         self.init()
         self.window.mainloop()
@@ -29,8 +30,12 @@ class root:
         self.window.bind('<B1-Motion>', self.fill_square)
         self.clear = tk.Button(self.window, width = 5, height = 1, text = 'Clear!!', command = self.clearAll)
         self.clear.place(x = 0, y = 0)
-        self.run = tk.Button(self.window,  width = 5, height = 1, text = 'Run!!', command = self.runBfs)
+        self.run = tk.Button(self.window,  width = 5, height = 1, text = 'Run!!', command = self.runAlg)
         self.run.place(x = 0, y = 30)
+        self.var = StringVar(self.window)
+        self.var.set("BFS")
+        self.menu = OptionMenu(self.window, self.var, 'BFS', 'A-Star')
+        self.menu.place(x = 68, y = 0)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind('<Configure>', self.draw_grid) 
         self.windowState = True
@@ -99,43 +104,59 @@ class root:
             self.invalid.append([col, row])
     
     
-    def drawSS(self, items, fill):
+    def draw(self, items, fill, delay):
         col, row = items.pop()
-        self.canvas.create_rectangle(row * 22, col * 22, (row + 1) * 22, (col + 1) * 22, fill = fill)
-        if len(items) > 0:
-            self.canvas.after(5, self.drawSS, items, fill)
+        if [col, row]== [self.src_x, self.src_y] or [col, row] == [self.des_x, self.des_y]:
+            if len(items) > 0:
+                self.canvas.after(delay, self.draw, items, fill, delay)
+        else:
+            self.canvas.create_rectangle(row * 22, col * 22, (row + 1) * 22, (col + 1) * 22, fill = fill)
+            if len(items) > 0:
+                self.canvas.after(delay, self.draw, items, fill, delay)
             
-    def drawP(self, items, fill):
-        col, row = items.pop()
-        self.canvas.create_rectangle(row * 22, col * 22, (row + 1) * 22, (col + 1) * 22, fill = fill)
-        if len(items) > 0:
-            self.canvas.after(5, self.drawP, items, fill)
 
-    def runBfs(self):
+    def runAlg(self):
         if(self.src_x == -1 or self.src_y == -1 or self.des_x == -1 or self.des_y == -1):
             return
 
-        found, searchspace, path = bfs.bfs(self.src_x, self.src_y, self.des_x, self.des_y, self.invalid)
-        if found:
-            self.prev_y = self.des_y
-            self.prev_x = self.des_x
-            searchspace.remove([self.src_x, self.src_y])
-            path.remove([self.des_x, self.des_y])
-            searchspace.reverse()
-            
-            # Removed the bug. When there is a left turn
-            for i in range(1, len(path)):
-                diff = abs(path[i][0] - path[i - 1][0])
-                diff += abs(path[i][1] - path[i - 1][1])
-                if diff > 1:
-                    path.insert(i, [path[i - 1][0], path[i - 1][1] + 1])
-            
-            self.drawSS(searchspace, 'blue')
-            self.canvas.after((len(searchspace) + len(path)) * 5 + 500, self.drawP, path, 'pink')
+        found, searchspace, path = False, [], []
 
-        else:
+        if self.var.get() == 'BFS':
+            found, searchspace, path = bfs.main(self.src_x, self.src_y, self.des_x, self.des_y, self.invalid)
+        elif self.var.get() == 'Dijkstra':
+            pass
+        elif self.var.get() == 'A-Star':
+            pass
+
+        if not found:
             msg = messagebox.showerror(title = "Invalid", message = "Path Not Found") 
-            self.clearAll()  
+            self.clearAll()
+            return
+
+        if self.drawn == True:
+            row, col = self.src_x, self.src_y
+            self.drawn = False
+            self.redraw(searchspace, path)
+            return
+            
+        self.drawn = True
+        self.prev_y = self.des_y
+        self.prev_x = self.des_x
+        searchspace.reverse()
+        
+        # Removed the bug. When there is a left turn
+        for i in range(1, len(path)):
+            diff = abs(path[i][0] - path[i - 1][0])
+            diff += abs(path[i][1] - path[i - 1][1])
+            if diff > 1:
+                path.insert(i, [path[i - 1][0], path[i - 1][1] + 1])
+        
+        self.draw(searchspace, 'blue', 5)
+        self.canvas.after((len(searchspace) + len(path)) * 5 + 500, self.draw, path, 'pink', 5)
+
+    def redraw(self, searchspace, path):
+        self.draw(searchspace, 'white', 0)
+        self.canvas.after(500, self.runAlg)
 
     def clearAll(self):
         self.window.destroy()
