@@ -17,7 +17,7 @@ def bfs(src_x, src_y, des_x, des_y, invalid):
         used.append([0] * 70)
         par.append([[-1, -1]] * 70)
     
-    dx = [-1, 1, 0, 0]
+    dx = [1, -1, 0, 0]
     dy = [0, 0, -1, 1]
 
     for x, y in invalid:
@@ -36,7 +36,6 @@ def bfs(src_x, src_y, des_x, des_y, invalid):
         for i in range(4):
             tx = row + dx[i]
             ty = col + dy[i]
-
             if valid(tx, ty) and used[tx][ty] == 0:
                 used[tx][ty] = 1
                 q.put((tx, ty))

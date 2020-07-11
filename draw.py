@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from alg import bfs, dfs
+from alg import bfs
 
 class root:
     def __init__(self):
@@ -122,7 +122,14 @@ class root:
             searchspace.remove([self.src_x, self.src_y])
             path.remove([self.des_x, self.des_y])
             searchspace.reverse()
-            print(path)
+            
+            # Removed the bug. When there is a left turn
+            for i in range(1, len(path)):
+                diff = abs(path[i][0] - path[i - 1][0])
+                diff += abs(path[i][1] - path[i - 1][1])
+                if diff > 1:
+                    path.insert(i, [path[i - 1][0], path[i - 1][1] + 1])
+            
             self.drawSS(searchspace, 'blue')
             self.canvas.after((len(searchspace) + len(path)) * 5 + 500, self.drawP, path, 'pink')
 
